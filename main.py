@@ -12,7 +12,6 @@ async def process(playlist: str, directory_to_save: str, threads: int) -> None:
     extractor = PlaylistExtractor()
     print(f'Extracting from {playlist} ...')
     songs = await extractor.extract(playlist)
-    songs = songs[20:]
     total_songs = len(songs)
     print(f'... {total_songs} songs found')
 
