@@ -34,4 +34,4 @@ options:
 ### Known problems
 
 - [ ] Script does not recognize more, than 30 tracks in playlist.
-Probably can be fixed by sending another http-reqeust to Spotify
+Probably can be fixed by sending another http-request to Spotify
