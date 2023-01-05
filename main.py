@@ -41,7 +41,7 @@ async def process(playlist: str, directory_to_save: str, threads: int) -> None:
             Logger.total(total_songs, ok, failed)
             futures.remove(item)
 
-    Logger.total(time.time() - tb)
+    Logger.time(time.time() - tb)
 
 
 async def main():
