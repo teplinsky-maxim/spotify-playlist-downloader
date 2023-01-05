@@ -1,40 +1,41 @@
 import asyncio
+import random
 
 from aiohttp import ClientSession
 import aiofiles
 
 from core.downloader.base import DownloaderBase
-from core.downloader.exceptions import DownloaderInternalError
 
 
 class SoundLoaderDownloader(DownloaderBase):
-    def __init__(self):
+    def __init__(self, path_to_tracks: str):
         super().__init__()
+        self._path_to_tracks = path_to_tracks
 
     async def download(self, url: str) -> bool:
         track_metadata = await self._fetch_metadata_request(url)
         downloader_metadata = await self._start_download(track_metadata)
         track_id = downloader_metadata['id']
 
-        tries = 5
+        max_tries = 5
+        tries = 0
         path_to_download = None
-        while tries:
-            tries = tries - 1
+        while max_tries >= tries:
+            tries = tries + 1
 
             path_to_download = await self._get_download_path(track_id)
             if path_to_download is None:
-                await asyncio.sleep(2)
+                await asyncio.sleep(2 * tries)
                 continue
             break
-        if not tries and path_to_download is None:
+        if path_to_download is None:
             return False
             # raise DownloaderInternalError('No path to download was generated')
 
         await self._download_track(path_to_download)
         return True
 
-    @staticmethod
-    async def _download_track(path: str) -> None:
+    async def _download_track(self, path: str) -> None:
         name = path.split('/')[-1]
 
         headers = {
@@ -57,7 +58,7 @@ class SoundLoaderDownloader(DownloaderBase):
 
         async with ClientSession() as session:
             async with session.get(path, headers=headers) as resp:
-                f = await aiofiles.open(f'./{name}', mode='wb')
+                f = await aiofiles.open(f'{self._path_to_tracks}/{name}', mode='wb')
                 await f.write(await resp.read())
                 await f.close()
 
@@ -125,6 +126,10 @@ class SoundLoaderDownloader(DownloaderBase):
             async with session.post(url, json=json_data, headers=headers) as resp:
                 data = await resp.json()
                 return data
+
+    # need to store e-tag from server response
+    # at fetch_metadata_request
+    # and refactor headers to common
 
     @staticmethod
     async def _fetch_metadata_request(song_url: str) -> dict:

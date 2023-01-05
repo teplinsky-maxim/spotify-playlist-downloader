@@ -12,7 +12,7 @@ class PlaylistExtractor(PlaylistExtractorBase):
     def __init__(self):
         super().__init__()
 
-    async def extract(self, url: str) -> Iterable[str]:
+    async def extract(self, url: str) -> list[str]:
         page = await self._fetch_page(url)
         songs = self._extract_songs(page)
         return songs
